@@ -7,10 +7,39 @@
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
-  <div class="container">
-    <h1>距離 璃悠悠 上次開台已經</h1>
-    <div id="timer">載入中...</div>
-  </div>
+  <div class="bg"></div>
+  <div class="overlay"></div>
+
+  <main class="wrap">
+    <!-- 上方：頭像 + 標題 -->
+    <header class="top">
+      <img id="avatar" class="avatar" alt="avatar" />
+      <div>
+        <div class="headline">璃悠悠今天開台了嗎</div>
+        <div id="subline" class="subline">載入中...</div>
+      </div>
+    </header>
+
+    <!-- 中間：左狀態、右計時 -->
+    <section class="mid">
+      <div class="panel">
+        <div class="label">開台狀態</div>
+        <div id="status" class="status">載入中…</div>
+        <div id="statusDesc" class="desc"></div>
+      </div>
+
+      <div class="panel">
+        <div id="timerLabel" class="label">距離上次開台</div>
+        <div id="timer" class="timer">載入中…</div>
+        <div id="timerDesc" class="desc"></div>
+      </div>
+    </section>
+
+    <!-- 下方：連結 -->
+    <footer class="bottom">
+      <a id="channelLink" class="link" target="_blank" rel="noreferrer">前往 Twitch 頻道</a>
+    </footer>
+  </main>
 
   <script src="main.js"></script>
 </body>
