@@ -3,11 +3,12 @@
   --border: rgba(255,255,255,0.45);
   --text: #0b1220;
   --muted: rgba(11,18,32,0.65);
+  --shadow: rgba(0,0,0,0.18); /* ✅補上，避免 var(--shadow) 無效 */
 }
 
 *{ box-sizing: border-box; }
 
-.body{
+body{ /* ✅ .body 改成 body */
   margin:0;
   min-height:100vh;
   color: var(--text);
@@ -24,13 +25,14 @@
   transform: scale(1.05);
 }
 
+/* ✅ 白玻璃風格：用亮色遮罩，而不是黑色壓暗 */
 .overlay{
   position: fixed;
   inset: 0;
   background: linear-gradient(
     180deg,
-    rgba(0,0,0,0.35),
-    rgba(0,0,0,0.55)
+    rgba(255,255,255,0.25),
+    rgba(255,255,255,0.08)
   );
 }
 
@@ -55,7 +57,7 @@
   background: var(--card);
   border: 1px solid var(--border);
   border-radius: 18px;
-  backdrop-filter: blur(10px);
+  backdrop-filter: blur(12px);
   box-shadow: 0 18px 60px var(--shadow);
 }
 
@@ -65,7 +67,7 @@
   border-radius: 16px;
   object-fit: cover;
   border: 1px solid var(--border);
-  background: rgba(255,255,255,0.08);
+  background: rgba(255,255,255,0.18);
 }
 
 .headline{
@@ -97,7 +99,7 @@
   background: var(--card);
   border: 1px solid var(--border);
   border-radius: 18px;
-  backdrop-filter: blur(10px);
+  backdrop-filter: blur(12px);
   box-shadow: 0 18px 60px var(--shadow);
 }
 
@@ -137,11 +139,12 @@
   padding: 12px 18px;
   border-radius: 14px;
   border: 1px solid var(--border);
-  background: rgba(255,255,255,0.12);
+  background: rgba(255,255,255,0.22); /* ✅白玻璃按鈕更亮 */
   color: var(--text);
   text-decoration:none;
-  backdrop-filter: blur(10px);
+  backdrop-filter: blur(12px);
 }
+
 .link:hover{
-  background: rgba(255,255,255,0.18);
+  background: rgba(255,255,255,0.30);
 }
