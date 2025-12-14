@@ -99,5 +99,10 @@ function tick() {
   setText("timer", fmt(diff));
 }
 
-// 2) 一定放最後：等 DOM 好再跑
-window.addEventListener("DOMContentLoaded", init);
+// 永遠會跑：DOMContentLoaded 前後都 OK
+if (document.readyState === "loading") {
+  document.addEventListener("DOMContentLoaded", init);
+} else {
+  init();
+}
+
