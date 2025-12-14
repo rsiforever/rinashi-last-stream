@@ -63,22 +63,22 @@ async function init() {
     }
 
     // 🔴 OFFLINE：從「關台後」開始計
-    else {
-      mode = "offline";
+   else {
+  mode = "offline";
 
-      if (!data.last_stream) {
-        throw new Error("找不到上次直播時間");
-      }
+  if (!data.ended_at) {
+    throw new Error("找不到上次關台時間（ended_at）");
+  }
 
-      anchorTime = new Date(data.last_stream);
+  anchorTime = new Date(data.ended_at);
 
-      $("status").textContent = "🔴 OFFLINE（未開台）";
-      $("statusDesc").textContent = "目前沒有直播。";
+  $("status").textContent = "🔴 OFFLINE（未開台）";
+  $("statusDesc").textContent = "目前沒有直播。";
 
-      $("timerLabel").textContent = "距離上次關台";
-      $("timerDesc").textContent =
-        `上次直播結束後開始計時`;
-    }
+  $("timerLabel").textContent = "距離上次關台";
+  $("timerDesc").textContent =
+    `關台時間：${new Date(data.ended_at).toLocaleString()}`;
+}
 
     startTimer();
 
