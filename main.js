@@ -1,15 +1,27 @@
-const API_URL = "https://twitch-last-stream.f1078987.workers.dev"; // 換成你的 Worker URL
+const API_URL = "https://twitch-last-stream.f1078987.workers.dev"; // 你的 Worker
 
 let lastStreamTime;
 
 async function init() {
-  const res = await fetch(API_URL);
-  const data = await res.json();
+  try {
+    const res = await fetch(API_URL, { cache: "no-store" });
+    if (!res.ok) {
+      const txt = await res.text();
+      throw new Error(`API ${res.status}: ${txt}`);
+    }
+    const data = await res.json();
 
-  lastStreamTime = new Date(data.last_stream);
+    if (!data.last_stream) {
+      throw new Error(`API 回傳缺少 last_stream：${JSON.stringify(data)}`);
+    }
 
-  update();
-  setInterval(update, 1000);
+    lastStreamTime = new Date(data.last_stream);
+    update();
+    setInterval(update, 1000);
+  } catch (err) {
+    document.getElementById("timer").textContent = `載入失敗：${err.message}`;
+    console.error(err);
+  }
 }
 
 function update() {
