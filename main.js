@@ -1,11 +1,15 @@
 "use strict";
 
-const API_URL = "https://api.你的網域"; // 🔴 換成你現在用的 API
-
+/* ===== 設定區 ===== */
+const API_URL = "https://twitch-last-stream.f1078987.workers.dev";
 const CUSTOM_BG = "https://i.meee.com.tw/ilOcteV.png";
+/* ================= */
 
-let anchorTime = null; // 計時基準時間
+let anchorTime = null; // 計時起點（Date）
+let mode = "offline"; // live | offline
+let timerId = null;
 
+/* ---------- 工具 ---------- */
 function fmt(ms) {
   const s = Math.floor(ms / 1000) % 60;
   const m = Math.floor(ms / 60000) % 60;
@@ -14,9 +18,8 @@ function fmt(ms) {
   return `${d} 天 ${h} 小時 ${m} 分 ${s} 秒`;
 }
 
-function setText(id, text) {
-  const el = document.getElementById(id);
-  if (el) el.textContent = text;
+function $(id) {
+  return document.getElementById(id);
 }
 
 function setBg(url) {
@@ -24,68 +27,84 @@ function setBg(url) {
   if (bg && url) bg.style.backgroundImage = `url("${url}")`;
 }
 
+/* ---------- 主流程 ---------- */
 async function init() {
   try {
     setBg(CUSTOM_BG);
 
     const res = await fetch(API_URL, { cache: "no-store" });
+    if (!res.ok) throw new Error(`API error ${res.status}`);
     const data = await res.json();
 
-    // 頭像
-    if (data.profile_image_url) {
-      document.getElementById("avatar").src = data.profile_image_url;
+    // 基本資訊
+    if ($("avatar") && data.profile_image_url) {
+      $("avatar").src = data.profile_image_url;
+    }
+    if ($("subline")) {
+      $("subline").textContent = `實況主：${data.display_name || data.login}`;
+    }
+    if ($("channelLink")) {
+      $("channelLink").href = `https://www.twitch.tv/${data.login}`;
     }
 
-    // 頻道連結
-    document.getElementById("channelLink").href =
-      `https://www.twitch.tv/${data.login}`;
+    /* ===== 狀態判斷 ===== */
 
-    setText("subline", `實況主：${data.display_name}`);
-
+    // 🟢 LIVE：從開台時間開始計
     if (data.is_live && data.started_at) {
-      // 🟢 LIVE：從開台時間算
+      mode = "live";
       anchorTime = new Date(data.started_at);
 
-      setText("status", "🟢 LIVE（開台中）");
-      setText("statusDesc", "目前正在直播");
-      setText("timerLabel", "目前開台時數");
-      setText(
-        "timerDesc",
-        `開始時間：${new Date(data.started_at).toLocaleString()}`
-      );
+      $("status").textContent = "🟢 LIVE（開台中）";
+      $("statusDesc").textContent = "目前正在直播。";
 
-    } else if (data.ended_at) {
-      // 🔴 OFFLINE：從「關台時間」算
-      anchorTime = new Date(data.ended_at);
-
-      setText("status", "🔴 OFFLINE（未開台）");
-      setText("statusDesc", "目前沒有直播");
-      setText("timerLabel", "距離上次關台");
-      setText(
-        "timerDesc",
-        `關台時間：${new Date(data.ended_at).toLocaleString()}`
-      );
-
-    } else {
-      throw new Error("API 尚未提供 ended_at（第一次啟用時正常）");
+      $("timerLabel").textContent = "目前開台時數";
+      $("timerDesc").textContent =
+        `開始時間：${new Date(data.started_at).toLocaleString()}`;
     }
 
-    tick();
-    setInterval(tick, 1000);
+    // 🔴 OFFLINE：從「關台後」開始計
+    else {
+      mode = "offline";
 
-  } catch (e) {
-    setText("status", "載入失敗");
-    setText("statusDesc", e.message);
-    console.error(e);
+      if (!data.last_stream) {
+        throw new Error("找不到上次直播時間");
+      }
+
+      anchorTime = new Date(data.last_stream);
+
+      $("status").textContent = "🔴 OFFLINE（未開台）";
+      $("statusDesc").textContent = "目前沒有直播。";
+
+      $("timerLabel").textContent = "距離上次關台";
+      $("timerDesc").textContent =
+        `上次直播結束後開始計時`;
+    }
+
+    startTimer();
+
+  } catch (err) {
+    console.error(err);
+    if ($("status")) $("status").textContent = "載入失敗";
+    if ($("statusDesc")) $("statusDesc").textContent = err.message;
+    if ($("timer")) $("timer").textContent = "—";
   }
 }
 
-function tick() {
+/* ---------- 計時 ---------- */
+function startTimer() {
   if (!anchorTime) return;
-  setText("timer", fmt(Date.now() - anchorTime.getTime()));
+  if (timerId) clearInterval(timerId);
+
+  tick();
+  timerId = setInterval(tick, 1000);
 }
 
-// 永遠啟動
+function tick() {
+  const diff = Date.now() - anchorTime.getTime();
+  if ($("timer")) $("timer").textContent = fmt(diff);
+}
+
+/* ---------- 啟動 ---------- */
 if (document.readyState === "loading") {
   document.addEventListener("DOMContentLoaded", init);
 } else {
